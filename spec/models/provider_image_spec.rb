@@ -34,7 +34,32 @@ module Tim
           ImageFactory::ProviderImage.any_instance.stub(:save!)
           TargetImage.any_instance.stub(:factory_id).and_return("1234")
         end
+        context "destroy" do
+	  before(:each) do
+            ProviderImage.any_instance.stub(:create_factory_provider_image)
+            ProviderImage.any_instance.stub(:request_deletion)
+	    @p = FactoryGirl.create(:provider_image_with_full_tree)
+	  end
 
+          it "should call factory to request deletion on initial call" do
+	    @p.should_receive(:request_deletion)
+	    @p.destroy.should be_false
+	  end
+          it "should not delete the model object on initial call" do
+	    @p.status = "Farkle"
+	    @p.save!
+	    @p.destroy.should be_false
+	  end
+          it "should not delete the model object if status is nil" do
+	    @p.status.should be_nil
+	    @p.destroy.should be_false
+	  end
+          it "should destroy the object if status is DELETED" do
+	    @p.status = "DELETED"
+	    @p.save!
+	    @p.destroy.should be_true
+	  end
+	end
         it "should create factory provider image and populate fields" do
           # Needed due to ActiveRecord::Associations::Association#target
           # name conflict

@@ -8,9 +8,10 @@ module Tim
       begin
         if get? then
           display resource
+	elsif has_errors?
+          display resource.errors, :status => :unprocessable_entity
         elsif post?
-          status = :created
-          controller.render :status => status, :action => "show"
+          controller.render :status => :created, :action => "show"
         elsif put?
           controller.render :status => :ok, :action => "show"
         else

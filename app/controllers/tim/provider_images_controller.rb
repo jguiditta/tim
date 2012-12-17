@@ -44,8 +44,13 @@ module Tim
 
     def destroy
       @provider_image = Tim::ProviderImage.find(params[:id]) unless defined? @provider_image
-      @provider_image.destroy
-      respond_with(@provider_image, @respond_options)
+      @provider_image.status = "PENDING_DELETE"
+      @provider_image.save!
+      respond_with(@provider_image, @respond_options) do |format|
+        format.xml {
+	  render :xml => @provider_image, :status => :accepted
+	}
+      end
     end
 
     private

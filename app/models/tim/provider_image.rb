@@ -17,6 +17,9 @@ module Tim
 
     after_create :create_factory_provider_image, :unless => :imported?
     after_create :create_import, :if => :imported?
+    after_update :deleted_on_provider, :if => :deleted_on_provider?
+    before_destroy :request_deletion, :unless => :destroyable?
+    before_destroy :destroyable?
 
     def imported?
       target_image.imported?
@@ -29,6 +32,27 @@ module Tim
 
     def factory_provider
       self.provider
+    end
+
+    def destroyable?
+      return false unless deleted_on_provider?
+    end
+
+    def request_deletion
+      # Call Factory to request delete of the actual image on the
+      # provider.
+      provider_image = ImageFactory::ProviderImage.find(self.factory_id)
+      provider_image.parameters = { :callbacks => ["#{ImageFactory::ProviderImage.callback_url}/#{self.id}"] }
+      provider_image.destroy
+      # problem here is it seems you cannot set an attribute on DELETE, and factory doesn't allow PUT....
+    end
+
+    def deleted_on_provider?
+      true if self.status && self.status.upcase == 'DELETED'
+    end
+
+    def deleted_on_provider
+      self.destroy if status.upcase == 'DELETED'
     end
 
     def create_factory_provider_image

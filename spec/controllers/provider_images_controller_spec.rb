@@ -99,12 +99,10 @@ module Tim
 
       describe "Delete Provider Image" do
         context "Success" do
-          it "should return a no content code when deleting a provider image" do
+          it "should return an accepted code when deleting a provider image" do
             provider_image = FactoryGirl.create(:provider_image_with_full_tree)
             delete :destroy, :id => provider_image.id
-            response.code.should == "204"
-
-            expect { ProviderImage.find(provider_image.id) }.to raise_error(ActiveRecord::RecordNotFound)
+            response.code.should == "202"
           end
         end
 
